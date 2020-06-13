@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Mar 10 17:37:37 2020
-
-@author: askou
-"""
-
 # =============================================================================
 # try:
 #     from IPython import get_ipython
@@ -119,8 +112,8 @@ plt.imshow(fcEmp[:,0,0,:,:].mean(axis=0), origin = 'lower',
            cmap=plt.cm.get_cmap('Blues',256), vmax=1)
 #plt.imshow(fcEmp[1,0,0,:,:], origin = 'lower', cmap='Blues', vmax = 1)
 plt.colorbar()
-plt.xlabel('source ROI', fontsize=14)
-plt.ylabel('target ROI', fontsize=14)
+plt.xlabel('target ROI', fontsize=14)
+plt.ylabel('source ROI', fontsize=14)
 plt.title('FC0 (functional connectivity with no time lag)')
 plt.show()
 
@@ -129,8 +122,8 @@ plt.figure()
 plt.imshow(fcEmp[0,0,0,:,:].mean(axis=0), origin = 'lower',
            cmap=plt.cm.get_cmap('Blues',256), vmax=1)
 plt.colorbar()
-plt.xlabel('source ROI', fontsize=14)
-plt.ylabel('target ROI', fontsize=14)
+plt.xlabel('target ROI', fontsize=14)
+plt.ylabel('source ROI', fontsize=14)
 plt.title('FC0 (functional connectivity with no time lag)')
 plt.show()
 
@@ -140,8 +133,8 @@ plt.imshow(fcEmpTest[:,0,0,:,:].mean(axis=0), origin = 'lower',
            cmap=plt.cm.get_cmap('Blues',256), vmax=1)
 #plt.imshow(fcEmp[1,0,0,:,:], origin = 'lower', cmap='Blues', vmax = 1)
 plt.colorbar()
-plt.xlabel('source ROI', fontsize=14)
-plt.ylabel('target ROI', fontsize=14)
+plt.xlabel('target ROI', fontsize=14)
+plt.ylabel('source ROI', fontsize=14)
 plt.title('Test FC0 (functional connectivity with no time lag)')
 plt.show()
 
@@ -150,8 +143,8 @@ plt.figure()
 plt.imshow(fcEmp[:,0,1,:,:].mean(axis=0), origin = 'lower',
            cmap='Blues', vmax = 1)
 plt.colorbar()
-plt.xlabel('source ROI', fontsize=14)
-plt.ylabel('target ROI', fontsize=14)
+plt.xlabel('target ROI', fontsize=14)
+plt.ylabel('source ROI', fontsize=14)
 plt.title('FC1 (functional connectivity with no time lag)')
 
 plt.show()
