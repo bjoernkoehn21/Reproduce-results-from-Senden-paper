@@ -4,7 +4,7 @@ import scipy.io
 import scipy.stats as stt
 import numpy as np
 import matplotlib.pyplot as plt
-from pymou.mou_model import MOU
+from mou_model import MOU
 
 _RES_DIR = 'model_parameter/'
 _I_REST_RUN = 0
