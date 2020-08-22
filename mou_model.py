@@ -381,7 +381,7 @@ class MOU(BaseEstimator):
 
             # Calculate Q0 and Qtau for model
             # changed by Bjoern Koehn according to paper: J instead of J.T and vice versa
-            Q0 = spl.solve_lyapunov(J, -Sigma)
+            Q0 = spl.solve_continuous_lyapunov(J, -Sigma)
 #            print('Q0 the same: ' + str(((spl.solve_continuous_lyapunov(J.T, -Sigma)-spl.solve_continuous_lyapunov(J, -Sigma))<1e-2).all()))
             Qtau = np.dot( Q0, spl.expm( J.T * i_tau_opt ) )
 # =============================================================================
@@ -427,10 +427,10 @@ class MOU(BaseEstimator):
 #             # By-hand-implementation of norm calculation
 #             # Calculate error between model and empirical data for FC0 and FC_tau (matrix distance)
 #             dist_Q_hist[i_iter] = 0.5*(np.sqrt((Delta_Q0**2).sum()/(Q0_obj**2).sum())+np.sqrt((Delta_Qtau**2).sum()/(Qtau_obj**2).sum()))
-# 
+#
 # 			# Calculate Pearson correlation between model and empirical data for FC0 and FC_tau
 #             Pearson_Q_hist[i_iter] = 0.5*(stt.pearsonr(Q0.reshape(-1),Q0_obj.reshape(-1))[0]+stt.pearsonr(Qtau.reshape(-1),Qtau_obj.reshape(-1))[0])
-# 
+#
 # 			# Record best model parameters
 #             # Best fit given by best matrix difference
 #             if dist_Q_hist[i_iter] < best_dist:
@@ -468,7 +468,7 @@ class MOU(BaseEstimator):
 
             # Jacobian update with weighted FC updates depending on respective error
             # changed by Bjoern Koehn to version in paper and at https://github.com/MatthieuGilson/EC_estimation/blob/master/optimization_movie.py
-            Delta_J = np.dot(np.linalg.pinv(Q0),Delta_Q0 + np.dot(Delta_Qtau,spl.expm(-J.T * i_tau_opt))).T / i_tau_opt
+            Delta_J = np.dot(np.linalg.pinv(Q0), Delta_Q0 + np.dot(Delta_Qtau, spl.expm(-J.T * i_tau_opt))).T / i_tau_opt
 # =============================================================================
 #             Delta_J = np.dot( np.linalg.pinv(Q0), Delta_Q0 ) + np.dot( Delta_Q0, np.linalg.pinv(Q0) ) \
 #                     + np.dot( np.linalg.pinv(Qtau), Delta_Qtau ) + np.dot( Delta_Qtau, np.linalg.pinv(Qtau) )

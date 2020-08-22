@@ -45,7 +45,7 @@ for k in range(len(run)):
 
 ## Calculate functional connectivity (BOLD covariances) [Q0 und Q1].
 # time_shift = np.arange(4, dtype=float) # for autocovariance plots
-time_shift = np.arange(2, dtype=float)
+time_shift = np.arange(4, dtype=float)
 n_shifts = len(time_shift)
 
 FC_emp = np.zeros([n_subjects, n_runs, n_shifts, n_rois, n_rois])
@@ -68,7 +68,7 @@ for i_subject in range(n_subjects):
 rescale_FC_factor = (0.5 / FC_emp[:, _I_REST_RUN, _I_NO_TIMESHIFT, :,
                                   :].diagonal(axis1=1, axis2=2).mean())
 FC_emp *= rescale_FC_factor
-# filtered_ts_emp /= np.sqrt(0.135) # Rescale to get the same order of magnitude for locale variability as in paper.
+filtered_ts_emp /= np.sqrt(rescale_FC_factor) # Rescale to get the same order of magnitude for locale variability as in paper.
 
 print('most of the FC values should be between 0 and 1')
 print('mean FC0 value:', FC_emp[:, :, _I_NO_TIMESHIFT, :, :].mean(),
@@ -77,6 +77,7 @@ print('max FC0 value:', FC_emp[:, :, _I_NO_TIMESHIFT, :, :].max())
 print('mean BOLD variance (diagonal of each FC0 matrix):',
       FC_emp[:, :, _I_NO_TIMESHIFT, :, :].diagonal(axis1=2, axis2=3).mean())
 print('rescaleFactor: ' + str(rescale_FC_factor))
+print('rescale: rescaleFactor')
 # Show distibution of FC0 values.
 plt.figure()
 plt.hist(FC_emp[:, :, _I_NO_TIMESHIFT, :, :].flatten(),
