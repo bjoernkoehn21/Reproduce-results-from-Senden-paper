@@ -21,9 +21,6 @@ from sklearn.base import BaseEstimator
 ###############################################################################
 class MOU(BaseEstimator):
     """
-    Description of the class and a summary of its parameters, attributes and
-    methods.
-
     Parameters
     ----------
     n_nodes : integer
@@ -331,11 +328,6 @@ class MOU(BaseEstimator):
 
         # Autocovariance time constant (exponential decay)
         log_ac = np.log( np.maximum( Q_obj.diagonal(axis1=1,axis2=2), 1e-10 ) )
-# =============================================================================
-#         # renders pretty similar results
-#         temp1 = np.sum(log_ac[0]-log_ac[1]) ################################### ADDED by Koehn
-#         tau_obj = 1/(temp1/self.n_nodes) ################################### ADDED by Koehn
-# =============================================================================
         v_tau = np.arange(Q_obj.shape[0], dtype=np.float)
         lin_reg = np.polyfit( np.repeat(v_tau, self.n_nodes), log_ac.reshape(-1), 1 )
         tau_obj = -1.0 / lin_reg[0]
@@ -382,66 +374,12 @@ class MOU(BaseEstimator):
             # Calculate Q0 and Qtau for model
             # changed by Bjoern Koehn according to paper: J instead of J.T and vice versa
             Q0 = spl.solve_lyapunov(J, -Sigma)
-#            print('Q0 the same: ' + str(((spl.solve_continuous_lyapunov(J.T, -Sigma)-spl.solve_continuous_lyapunov(J, -Sigma))<1e-2).all()))
             Qtau = np.dot( Q0, spl.expm( J.T * i_tau_opt ) )
-# =============================================================================
-#             Q0 = spl.solve_continuous_lyapunov(J.T, -Sigma)
-#             Qtau = np.dot( Q0, spl.expm( J * i_tau_opt ) )
-# =============================================================================
-            # Added by Bjoern Koehn 19.03.20
-            Q0_history = np.zeros([max_iter, self.n_nodes, self.n_nodes],
-                                  dtype=np.float)
-            Qtau_history = np.zeros([max_iter, self.n_nodes, self.n_nodes],
-                                    dtype=np.float)
-            Q0_history[i_iter, :, :] = Q0
-            Qtau_history[i_iter, :, :] = Qtau
+
 
             # difference matrices between model and objectives
             Delta_Q0 = Q0_obj - Q0
             Delta_Qtau = Qtau_obj - Qtau
-# =============================================================================
-#             # added by Bjoern Koehn
-#             import matplotlib.pyplot as plt
-#             plt.figure()
-#             plt.imshow(Q0_obj, origin = 'lower', cmap='Reds', vmax = Q0_obj.max(), vmin = 0)
-#             plt.colorbar()
-#             plt.xlabel('Source ROI', fontsize=14)
-#             plt.ylabel('Target ROI', fontsize=14)
-#             plt.title('Q0_obj (model)', fontsize=12)
-#             plt.figure()
-#             plt.imshow(Q0, origin = 'lower', cmap='Reds', vmax = Q0_obj.max(), vmin = 0)
-#             plt.colorbar()
-#             plt.xlabel('Source ROI', fontsize=14)
-#             plt.ylabel('Target ROI', fontsize=14)
-#             plt.title('Q0 (model)', fontsize=12)
-#             plt.figure()
-#             plt.imshow(Delta_Q0, origin = 'lower', cmap='Reds', vmax = Q0_obj.max(), vmin = 0)
-#             plt.colorbar()
-#             plt.xlabel('Source ROI', fontsize=14)
-#             plt.ylabel('Target ROI', fontsize=14)
-#             plt.title('Delta_Q0 (model)', fontsize=12)
-#             plt.show()
-# =============================================================================
-
-# =============================================================================
-#             # By-hand-implementation of norm calculation
-#             # Calculate error between model and empirical data for FC0 and FC_tau (matrix distance)
-#             dist_Q_hist[i_iter] = 0.5*(np.sqrt((Delta_Q0**2).sum()/(Q0_obj**2).sum())+np.sqrt((Delta_Qtau**2).sum()/(Qtau_obj**2).sum()))
-# 
-# 			# Calculate Pearson correlation between model and empirical data for FC0 and FC_tau
-#             Pearson_Q_hist[i_iter] = 0.5*(stt.pearsonr(Q0.reshape(-1),Q0_obj.reshape(-1))[0]+stt.pearsonr(Qtau.reshape(-1),Qtau_obj.reshape(-1))[0])
-# 
-# 			# Record best model parameters
-#             # Best fit given by best matrix difference
-#             if dist_Q_hist[i_iter] < best_dist:
-#                 best_dist = dist_Q_hist[i_iter]
-#                 best_Pearson = Pearson_Q_hist[i_iter]
-#                 J_best = np.copy(J)
-#                 Sigma_best = np.copy(Sigma)
-#             else:
-#                 # Wait at least 5 optimization steps before stopping
-#                 stop_opt = i_iter > min_iter
-# =============================================================================
 
             # Calculate error between model and empirical data for Q0 and FC_tau (matrix distance)
             dist_Q0 = np.linalg.norm(Delta_Q0) / norm_Q0_obj
@@ -455,8 +393,6 @@ class MOU(BaseEstimator):
 
             # Best fit given by best Pearson correlation coefficient
             # for both Q0 and Qtau (better than matrix distance)
-            # changed by Bjoern Koehn
-            #if dist_Q_hist[i_iter] < best_dist:
             if Pearson_Q_hist[i_iter] > best_Pearson:
                 best_dist = dist_Q_hist[i_iter]
                 best_Pearson = Pearson_Q_hist[i_iter]
@@ -469,10 +405,6 @@ class MOU(BaseEstimator):
             # Jacobian update with weighted FC updates depending on respective error
             # changed by Bjoern Koehn to version in paper and at https://github.com/MatthieuGilson/EC_estimation/blob/master/optimization_movie.py
             Delta_J = np.dot(np.linalg.pinv(Q0),Delta_Q0 + np.dot(Delta_Qtau,spl.expm(-J.T * i_tau_opt))).T / i_tau_opt
-# =============================================================================
-#             Delta_J = np.dot( np.linalg.pinv(Q0), Delta_Q0 ) + np.dot( Delta_Q0, np.linalg.pinv(Q0) ) \
-#                     + np.dot( np.linalg.pinv(Qtau), Delta_Qtau ) + np.dot( Delta_Qtau, np.linalg.pinv(Qtau) )
-# =============================================================================
 
             # Update effective connectivity matrix (regularization is L2)
             C[mask_C] += epsilon_C * ( Delta_J - regul_C * C )[mask_C]
@@ -483,11 +415,6 @@ class MOU(BaseEstimator):
             Delta_Sigma = - np.dot(J, Delta_Q0) - np.dot(Delta_Q0, J.T)
             Sigma[mask_Sigma] += epsilon_Sigma * ( Delta_Sigma - regul_Sigma * Sigma )[mask_Sigma]
             Sigma[mask_diag] = np.maximum(Sigma[mask_diag], min_val_Sigma_diag)
-# =============================================================================
-#             Delta_Sigma = - np.dot(J.T, Delta_Q0) - np.dot(Delta_Q0, J)
-#             Sigma[mask_Sigma] += epsilon_Sigma * ( Delta_Sigma - regul_Sigma * Sigma )[mask_Sigma]
-#             Sigma[mask_diag] = np.maximum(Sigma[mask_diag], min_val_Sigma_diag)
-# =============================================================================
 
             # Check if max allowed number of iterations have been reached
             if i_iter >= max_iter-1:
@@ -500,38 +427,12 @@ class MOU(BaseEstimator):
                 self.d_fit['correlation'] = best_Pearson
                 self.d_fit['distance history'] = dist_Q_hist
                 self.d_fit['correlation history'] = Pearson_Q_hist
-                # Added by Bjoern Koehn 19.03.20
-                self.d_fit['Q0'] = Q0_obj
             else:
                 i_iter += 1
 
         # Save the results and return
         self.J = J_best # matrix
         self.Sigma = Sigma_best # matrix
-
-# =============================================================================
-#         # added by Bjoern Koehn
-#         print('tau_x=' +str(tau_x))
-#         import matplotlib.pyplot as plt
-#         plt.figure()
-#         plt.imshow(Q0, origin = 'lower', cmap='Reds')
-#         plt.xlabel('Source ROI', fontsize=14)
-#         plt.ylabel('Target ROI', fontsize=14)
-#         plt.title('Q0 (model)', fontsize=12)
-#
-#         import matplotlib.pyplot as plt
-#         plt.figure()
-#         plt.imshow(mask_C, origin = 'lower')
-#         plt.xlabel('Source ROI', fontsize=14)
-#         plt.ylabel('Target ROI', fontsize=14)
-#         plt.title('mask_C', fontsize=12)
-#         import matplotlib.pyplot as plt
-#         plt.figure()
-#         plt.imshow(mask_Sigma, origin = 'lower')
-#         plt.xlabel('Source ROI', fontsize=14)
-#         plt.ylabel('Target ROI', fontsize=14)
-#         plt.title('mask_Sigma', fontsize=12)
-# =============================================================================
 
         return self
 
