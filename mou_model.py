@@ -21,9 +21,6 @@ from sklearn.base import BaseEstimator
 ###############################################################################
 class MOU(BaseEstimator):
     """
-    Description of the class and a summary of its parameters, attributes and
-    methods.
-
     Parameters
     ----------
     n_nodes : integer
