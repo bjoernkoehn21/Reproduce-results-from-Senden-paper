@@ -321,21 +321,32 @@ class MOU(BaseEstimator):
 
         if (not type(i_tau_opt) == int) or (i_tau_opt <= 0):
             raise ValueError('Scalar value i_tau_opt must be non-zero')
+# ADDED by Koehn
+# =============================================================================
+        # Create a dictionary to store the diagnostics of fit
+        self.d_fit = dict()
+# =============================================================================
 
         # Objective FC matrices (empirical)
         Q0_obj = Q_obj[0]
         Qtau_obj = Q_obj[i_tau_opt]
-
+        
         # Autocovariance time constant (exponential decay)
         log_ac = np.log( np.maximum( Q_obj.diagonal(axis1=1,axis2=2), 1e-10 ) )
+# ADDED by Koehn
 # =============================================================================
+        # calculation following the instruction in the Senden-paper
+        tau_obj = 1/(np.sum(log_ac[0]-log_ac[1])/self.n_nodes)
 #         # renders pretty similar results
-#         temp1 = np.sum(log_ac[0]-log_ac[1]) ################################### ADDED by Koehn
-#         tau_obj = 1/(temp1/self.n_nodes) ################################### ADDED by Koehn
+#         temp1 = np.sum(log_ac[0]-log_ac[1]) 
+#         tau_obj = 1/(temp1/self.n_nodes) 
 # =============================================================================
-        v_tau = np.arange(Q_obj.shape[0], dtype=np.float)
-        lin_reg = np.polyfit( np.repeat(v_tau, self.n_nodes), log_ac.reshape(-1), 1 )
-        tau_obj = -1.0 / lin_reg[0]
+# original implementation by Gilson
+# =============================================================================
+#        v_tau = np.arange(Q_obj.shape[0], dtype=np.float)
+#        lin_reg = np.polyfit( np.repeat(v_tau, self.n_nodes), log_ac.reshape(-1), 1 )
+#        tau_obj = -1.0 / lin_reg[0]
+# =============================================================================
 
         # coefficients to balance the model error between Q0 and Qtau
         norm_Q0_obj = np.linalg.norm(Q0_obj)
@@ -444,7 +455,7 @@ class MOU(BaseEstimator):
             dist_Q0 = np.linalg.norm(Delta_Q0) / norm_Q0_obj
             dist_Qtau = np.linalg.norm(Delta_Qtau) / norm_Qtau_obj
             dist_Q_hist[i_iter] = 0.5 * (dist_Q0 + dist_Qtau)
-
+            
             # Calculate corr between model and empirical data for Q0 and FC_tau
             Pearson_Q0 = stt.pearsonr( Q0.reshape(-1), Q0_obj.reshape(-1) )[0]
             Pearson_Qtau = stt.pearsonr( Qtau.reshape(-1), Qtau_obj.reshape(-1) )[0]
