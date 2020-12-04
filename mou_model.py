@@ -336,7 +336,27 @@ class MOU(BaseEstimator):
 # ADDED by Koehn
 # =============================================================================
         # calculation following the instruction in the Senden-paper
-        tau_obj = 1/(np.sum(log_ac[0]-log_ac[1])/self.n_nodes)
+        tau_obj = 1/(np.sum(log_ac[0]-log_ac[1])/self.n_nodes)#/10#*16
+
+# =============================================================================
+        # calculation taken from Reuters script 'autocorrelate.m' version 2 (30.11.20)
+        n_shifts = Q_obj.shape[0]
+        #print('n_shifts', n_shifts)
+        ac = Q_obj.diagonal(axis1=1,axis2=2)
+        log_ac_comlex = np.zeros(np.array(ac.shape), dtype=complex)
+        import cmath
+        for i in range(ac.shape[0]):
+            for j in range(ac.shape[1]):
+                log_ac_comlex[i,j] = cmath.log(ac[i,j])
+        mean_log_ac = log_ac_comlex.mean(axis=1)
+        #print(mean_log_ac)
+        coeff = np.polyfit(np.arange(n_shifts), mean_log_ac, 1)
+        tau_x = -1/coeff[0]
+        #print('tau_x =', tau_x)
+        
+        #tau_obj = abs(tau_x)#*2.5#/5.5
+        #print('|tau_x| =', tau_obj)
+        
 #         # renders pretty similar results
 #         temp1 = np.sum(log_ac[0]-log_ac[1]) 
 #         tau_obj = 1/(temp1/self.n_nodes) 
