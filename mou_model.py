@@ -398,6 +398,12 @@ class MOU(BaseEstimator):
 
         # identity matrix
         id_mat = np.eye(self.n_nodes, dtype=np.float)
+        
+        ## according to https://github.com/MatthieuGilson/WBLEC_toolbox/blob/master/WBLECmodel.py
+        # does not change results in a significant way 
+        # scaling coefficients for FC0 and FC1 (to compensate that matrix FC1 has elements of smaller magnitude than FC0)
+        #a0 = np.linalg.norm(Qtau_obj) / (np.linalg.norm(Q0_obj) + np.linalg.norm(Qtau_obj))
+        #a1 = 1. - a0
 
         # run the optimization process
         stop_opt = False
@@ -497,6 +503,9 @@ class MOU(BaseEstimator):
             # Jacobian update with weighted FC updates depending on respective error
             # changed by Bjoern Koehn to version in paper and at https://github.com/MatthieuGilson/EC_estimation/blob/master/optimization_movie.py
             Delta_J = np.dot(np.linalg.pinv(Q0), Delta_Q0 + np.dot(Delta_Qtau, spl.expm(-J.T * i_tau_opt))).T / i_tau_opt
+                    ## according to https://github.com/MatthieuGilson/WBLEC_toolbox/blob/master/WBLECmodel.py
+            # does not change results in a significant way
+            #Delta_J = np.dot(np.linalg.pinv(Q0),a0*Delta_Q0+np.dot(a1*Delta_Qtau,spl.expm(-J.T))).T
 # =============================================================================
 #             Delta_J = np.dot( np.linalg.pinv(Q0), Delta_Q0 ) + np.dot( Delta_Q0, np.linalg.pinv(Q0) ) \
 #                     + np.dot( np.linalg.pinv(Qtau), Delta_Qtau ) + np.dot( Delta_Qtau, np.linalg.pinv(Qtau) )
