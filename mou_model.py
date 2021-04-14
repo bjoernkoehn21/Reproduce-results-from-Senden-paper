@@ -261,7 +261,7 @@ class MOU(BaseEstimator):
     def fit_LO(self, Q_obj, i_tau_opt=1, mask_C=None, mask_Sigma=None,
             epsilon_C=0.0001, epsilon_Sigma=0.1, regul_C=0.0, regul_Sigma=0.0,
             min_val_C=0.0, max_val_C=100.0, min_val_Sigma_diag=0.0, max_iter=10000,
-            min_iter=10, **kwargs): # originallyepsilon_Sigma=0.01, max_val_C=1.0 ################################### ADDED by Koehn
+            min_iter=10, **kwargs): # originally epsilon_Sigma=0.01, max_val_C=1.0 (3 as upper limit because in the paper the colorbar does not reach the value 3 ) ################################### ADDED by Koehn
         """
         Estimation of MOU parameters (connectivity C, noise covariance Sigma,
         and time constant tau_x) with Lyapunov optimization as in: Gilson et al.
@@ -333,10 +333,15 @@ class MOU(BaseEstimator):
         
         # Autocovariance time constant (exponential decay)
         log_ac = np.log( np.maximum( Q_obj.diagonal(axis1=1,axis2=2), 1e-10 ) )
+        #log_ac = np.log10(np.maximum(Q_obj.diagonal(axis1=1,axis2=2), pow(10, -3)))
+        #log_ac = np.log(Q_obj.diagonal(axis1=1,axis2=2))
 # ADDED by Koehn
 # =============================================================================
         # calculation following the instruction in the Senden-paper
-        tau_obj = 1/(np.sum(log_ac[0]-log_ac[1])/self.n_nodes)#/10#*16
+        #tau_obj = 1/(np.sum(log_ac[0]-log_ac[1])/self.n_nodes)#/10#*16
+        tau_obj = 1/(log_ac[0]-log_ac[1]).mean()
+        print('tau_x:', tau_obj)
+        #tau_obj = 1
 
 # =============================================================================
         # calculation taken from Reuters script 'autocorrelate.m' version 2 (30.11.20)
@@ -472,8 +477,11 @@ class MOU(BaseEstimator):
 # =============================================================================
 
             # Calculate error between model and empirical data for Q0 and FC_tau (matrix distance)
-            dist_Q0 = np.linalg.norm(Delta_Q0) / norm_Q0_obj
-            dist_Qtau = np.linalg.norm(Delta_Qtau) / norm_Qtau_obj
+            #dist_Q0 = np.linalg.norm(Delta_Q0) / norm_Q0_obj
+            #dist_Qtau = np.linalg.norm(Delta_Qtau) / norm_Qtau_obj
+            #dist_Q_hist[i_iter] = 0.5 * (dist_Q0 + dist_Qtau)
+            dist_Q0 = np.linalg.norm(Delta_Q0)**2 / norm_Q0_obj**2
+            dist_Qtau = np.linalg.norm(Delta_Qtau)**2 / norm_Qtau_obj**2
             dist_Q_hist[i_iter] = 0.5 * (dist_Q0 + dist_Qtau)
             
             # Calculate corr between model and empirical data for Q0 and FC_tau
@@ -484,8 +492,8 @@ class MOU(BaseEstimator):
             # Best fit given by best Pearson correlation coefficient
             # for both Q0 and Qtau (better than matrix distance)
             # changed by Bjoern Koehn
-            #if dist_Q_hist[i_iter] < best_dist:
-            if Pearson_Q_hist[i_iter] > best_Pearson:
+            if dist_Q_hist[i_iter] < best_dist:
+                #if Pearson_Q_hist[i_iter] > best_Pearson:
                 best_dist = dist_Q_hist[i_iter]
                 best_Pearson = Pearson_Q_hist[i_iter]
                 J_best = np.copy(J)
