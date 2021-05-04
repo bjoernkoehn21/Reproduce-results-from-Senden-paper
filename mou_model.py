@@ -477,11 +477,8 @@ class MOU(BaseEstimator):
 # =============================================================================
 
             # Calculate error between model and empirical data for Q0 and FC_tau (matrix distance)
-            #dist_Q0 = np.linalg.norm(Delta_Q0) / norm_Q0_obj
-            #dist_Qtau = np.linalg.norm(Delta_Qtau) / norm_Qtau_obj
-            #dist_Q_hist[i_iter] = 0.5 * (dist_Q0 + dist_Qtau)
-            dist_Q0 = np.linalg.norm(Delta_Q0)**2 / norm_Q0_obj**2
-            dist_Qtau = np.linalg.norm(Delta_Qtau)**2 / norm_Qtau_obj**2
+            dist_Q0 = np.linalg.norm(Delta_Q0) / norm_Q0_obj
+            dist_Qtau = np.linalg.norm(Delta_Qtau) / norm_Qtau_obj
             dist_Q_hist[i_iter] = 0.5 * (dist_Q0 + dist_Qtau)
             
             # Calculate corr between model and empirical data for Q0 and FC_tau
@@ -528,7 +525,7 @@ class MOU(BaseEstimator):
             # Check if max allowed number of iterations have been reached
             if i_iter >= max_iter-1:
                 stop_opt = True
-                print("Optimization did not converge. Maximum number of iterations arrived.")
+                print("Optimization did not converge. Maximum number of iterations reached.")
             # Check if iteration has finished or still continues
             if stop_opt:
                 self.d_fit['iterations'] = i_iter+1
